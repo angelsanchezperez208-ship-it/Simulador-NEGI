@@ -3,11 +3,8 @@ import { useParams, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { getDetalle } from '../api/simulaciones'
 import { formatDate } from '../lib/utils'
-import { Badge } from '../components/ui'
 import { ResultadosView } from './Simulador'
 import Spinner from '../components/Spinner'
-
-const NIVEL_COLOR = { 'Básico': '#16A34A', 'Intermedio': '#F59E0B', 'Avanzado': '#8B5CF6' }
 
 export default function ResultadoDetalle() {
   const { id } = useParams()
@@ -34,9 +31,6 @@ export default function ResultadoDetalle() {
       </div>
     )
 
-  const nivel = sim.escenario?.nivel
-  const nivelColor = NIVEL_COLOR[nivel] || 'var(--brand)'
-
   return (
     <div style={{ maxWidth: 920, margin: '0 auto' }}>
       {/* Breadcrumb */}
@@ -49,10 +43,9 @@ export default function ResultadoDetalle() {
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, marginBottom: 28 }}>
         <div>
-          <h1 style={{ fontSize: 'clamp(26px, 3vw, 36px)' }}>{sim.escenario?.nombre || 'Simulación'}</h1>
-          <p style={{ color: 'var(--muted)', fontSize: 14, marginTop: 6 }}>{formatDate(sim.createdAt)}</p>
+          <h1 style={{ fontSize: 'clamp(26px, 3vw, 36px)' }}>{sim.snap_nombre_escenario || 'Simulación'}</h1>
+          <p style={{ color: 'var(--muted)', fontSize: 14, marginTop: 6 }}>{formatDate(sim.created_at)}</p>
         </div>
-        {nivel && <Badge color={nivelColor} solid>Nivel {nivel}</Badge>}
       </div>
 
       <ResultadosView resultado={sim} isDetalle onHistorial={() => window.history.back()} />

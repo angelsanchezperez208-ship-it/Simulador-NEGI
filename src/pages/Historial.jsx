@@ -7,7 +7,6 @@ import { formatCurrency, formatDate } from '../lib/utils'
 import { Reveal } from '../components/ui'
 import Spinner from '../components/Spinner'
 
-const NIVEL_COLOR = { 'Básico': '#16A34A', 'Intermedio': '#F59E0B', 'Avanzado': '#8B5CF6' }
 const FILTERS = [['todos', 'Todas'], ['positivas', 'Con ganancia'], ['negativas', 'Con pérdida']]
 
 export default function Historial() {
@@ -37,7 +36,7 @@ export default function Historial() {
 
   const sims = data.simulaciones ?? []
   const filtered = filter === 'todos' ? sims : sims.filter((s) => {
-    const u = parseFloat(s.resultados?.utilidad_neta ?? 0)
+    const u = parseFloat(s.utilidad_mxn ?? 0)
     return filter === 'positivas' ? u >= 0 : u < 0
   })
 
@@ -86,28 +85,25 @@ export default function Historial() {
               </div>
 
               {filtered.map((s, i) => {
-                const utilidad = parseFloat(s.resultados?.utilidad_neta ?? 0)
-                const nivel = s.escenario?.nivel
+                const utilidad = parseFloat(s.utilidad_mxn ?? 0)
                 return (
                   <div
-                    key={s._id}
+                    key={s.id}
                     style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr 1fr auto', alignItems: 'center', padding: '16px 22px', borderBottom: i < filtered.length - 1 ? '1px solid var(--line)' : 'none', transition: 'background .2s' }}
                     onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--surface-2)' }}
                     onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                      {nivel && <span style={{ width: 9, height: 9, borderRadius: 99, background: NIVEL_COLOR[nivel] || 'var(--muted)', flexShrink: 0 }} />}
                       <div>
-                        <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--ink)' }}>{s.escenario?.nombre || '—'}</div>
-                        {nivel && <div style={{ fontSize: 12.5, color: 'var(--muted)' }}>Nivel {nivel}</div>}
+                        <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--ink)' }}>{s.snap_nombre_escenario || '—'}</div>
                       </div>
                     </div>
-                    <span style={{ fontSize: 13.5, color: 'var(--ink-2)' }}>{formatDate(s.createdAt)}</span>
+                    <span style={{ fontSize: 13.5, color: 'var(--ink-2)' }}>{formatDate(s.created_at)}</span>
                     <span style={{ textAlign: 'right', fontWeight: 800, fontSize: 15.5, color: utilidad >= 0 ? '#16A34A' : '#E5484D' }}>
                       {formatCurrency(utilidad)}
                     </span>
                     <div style={{ width: 100, textAlign: 'right' }}>
-                      <Link to={`/simulacion/${s._id}`} style={{ fontSize: 13.5, fontWeight: 700, color: 'var(--brand)', textDecoration: 'none' }}>
+                      <Link to={`/simulacion/${s.id}`} style={{ fontSize: 13.5, fontWeight: 700, color: 'var(--brand)', textDecoration: 'none' }}>
                         Ver detalle →
                       </Link>
                     </div>

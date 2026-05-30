@@ -21,8 +21,6 @@ const LOGROS = [
   { icon: '⭐', titulo: 'Utilidad récord',  desc: 'Supera $300,000 de utilidad',        unlocked: false, color: '#F43F6B' },
 ]
 
-const NIVEL_COLOR = { 'Básico': '#16A34A', 'Intermedio': '#F59E0B', 'Avanzado': '#8B5CF6' }
-
 export default function Dashboard() {
   const { usuario } = useAuth()
   const [historial, setHistorial] = useState([])
@@ -37,10 +35,10 @@ export default function Dashboard() {
 
   const firstName = usuario.nombre?.split(' ')[0] ?? usuario.nombre
   const totalSims = historial.length
-  const ultimaUtilidad = historial[0]?.resultados?.utilidad_neta ?? null
+  const ultimaUtilidad = historial[0]?.utilidad_mxn ?? null
   const topEscenario = historial.length
     ? Object.entries(historial.reduce((acc, s) => {
-        const n = s.escenario?.nombre || 'Desconocido'
+        const n = s.snap_nombre_escenario || 'Desconocido'
         acc[n] = (acc[n] || 0) + 1
         return acc
       }, {})).sort((a, b) => b[1] - a[1])[0]?.[0]
@@ -142,18 +140,16 @@ export default function Dashboard() {
             )}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 14 }}>
               {historial.map((s) => {
-                const utilidad = parseFloat(s.resultados?.utilidad_neta ?? 0)
-                const nivel = s.escenario?.nivel
+                const utilidad = parseFloat(s.utilidad_mxn ?? 0)
                 return (
-                  <Link key={s._id} to={`/simulacion/${s._id}`}
+                  <Link key={s.id} to={`/simulacion/${s.id}`}
                     style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', borderRadius: 12, background: 'var(--surface-2)', border: '1px solid var(--line)', textDecoration: 'none', transition: 'border-color .2s, transform .2s' }}
                     onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--line-strong)'; e.currentTarget.style.transform = 'translateX(3px)' }}
                     onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--line)'; e.currentTarget.style.transform = 'none' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                      {nivel && <span style={{ width: 8, height: 8, borderRadius: 99, background: NIVEL_COLOR[nivel] || 'var(--muted)', flexShrink: 0 }} />}
                       <div>
-                        <div style={{ fontSize: 14.5, fontWeight: 700, color: 'var(--ink)' }}>{s.escenario?.nombre || 'Escenario'}</div>
-                        <div style={{ fontSize: 12.5, color: 'var(--muted)' }}>{formatDate(s.createdAt)}</div>
+                        <div style={{ fontSize: 14.5, fontWeight: 700, color: 'var(--ink)' }}>{s.snap_nombre_escenario || 'Escenario'}</div>
+                        <div style={{ fontSize: 12.5, color: 'var(--muted)' }}>{formatDate(s.created_at)}</div>
                       </div>
                     </div>
                     <span style={{ fontWeight: 800, fontSize: 14.5, color: utilidad >= 0 ? 'var(--pos)' : 'var(--neg)' }}>{formatCurrency(utilidad)}</span>

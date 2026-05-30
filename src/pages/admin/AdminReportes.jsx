@@ -60,7 +60,7 @@ export default function AdminReportes() {
           <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
             <select value={usuarioId} onChange={(e) => setUsuarioId(e.target.value)} style={{ ...selectStyle, flex: 1, minWidth: 200 }}>
               <option value="">Selecciona un usuario</option>
-              {usuarios.map((u) => <option key={u._id} value={u._id}>{u.nombre} ({u.email})</option>)}
+              {usuarios.map((u) => <option key={u.id} value={u.id}>{u.nombre} ({u.email})</option>)}
             </select>
             <button onClick={cargarReporteUs} disabled={!usuarioId || loadingUs} style={{ ...btnStyle, opacity: (!usuarioId || loadingUs) ? 0.5 : 1, cursor: (!usuarioId || loadingUs) ? 'not-allowed' : 'pointer' }}>
               {loadingUs ? <Spinner /> : 'Ver reporte'}
@@ -88,7 +88,7 @@ export default function AdminReportes() {
           <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
             <select value={escenarioId} onChange={(e) => setEscenarioId(e.target.value)} style={{ ...selectStyle, flex: 1, minWidth: 200 }}>
               <option value="">Selecciona un escenario</option>
-              {escenarios.map((e) => <option key={e._id} value={e._id}>{e.nombre}</option>)}
+              {escenarios.map((e) => <option key={e.id} value={e.id}>{e.nombre}</option>)}
             </select>
             <button onClick={cargarReporteEsc} disabled={!escenarioId || loadingEsc} style={{ ...btnStyle, opacity: (!escenarioId || loadingEsc) ? 0.5 : 1, cursor: (!escenarioId || loadingEsc) ? 'not-allowed' : 'pointer' }}>
               {loadingEsc ? <Spinner /> : 'Ver reporte'}

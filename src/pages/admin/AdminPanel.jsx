@@ -42,7 +42,7 @@ export default function AdminPanel() {
     const nuevoRol = rolActual === 'admin' ? 'estudiante' : 'admin'
     try {
       await cambiarRol(id, nuevoRol, usuario.token)
-      setUsuarios((prev) => prev.map((u) => (u._id === id ? { ...u, rol: nuevoRol } : u)))
+      setUsuarios((prev) => prev.map((u) => (u.id === id ? { ...u, rol: nuevoRol } : u)))
       toast.success(`Rol cambiado a ${nuevoRol}`)
     } catch (err) { toast.error(err.message) }
   }
@@ -51,7 +51,7 @@ export default function AdminPanel() {
     if (!window.confirm('¿Seguro que deseas eliminar este usuario?')) return
     try {
       await eliminarUsuario(id, usuario.token)
-      setUsuarios((prev) => prev.filter((u) => u._id !== id))
+      setUsuarios((prev) => prev.filter((u) => u.id !== id))
       toast.success('Usuario eliminado')
     } catch (err) { toast.error(err.message) }
   }
@@ -119,21 +119,21 @@ export default function AdminPanel() {
                   </thead>
                   <tbody>
                     {usuarios.map((u, i) => (
-                      <tr key={u._id} style={{ borderBottom: i < usuarios.length - 1 ? '1px solid var(--line)' : 'none', transition: 'background .15s' }}
+                      <tr key={u.id} style={{ borderBottom: i < usuarios.length - 1 ? '1px solid var(--line)' : 'none', transition: 'background .15s' }}
                         onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--surface-2)' }}
                         onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}>
                         <td style={{ padding: '14px 20px', fontWeight: 600, color: 'var(--ink)' }}>{u.nombre}</td>
                         <td style={{ padding: '14px 20px', color: 'var(--muted)', fontSize: 13 }}>{u.email}</td>
                         <td style={{ padding: '14px 20px' }}>
-                          <button onClick={() => handleCambiarRol(u._id, u.rol)} disabled={u._id === usuario._id}
-                            style={{ fontSize: 12.5, fontWeight: 700, padding: '4px 12px', borderRadius: 99, border: 'none', cursor: u._id === usuario._id ? 'not-allowed' : 'pointer', opacity: u._id === usuario._id ? 0.4 : 1, background: u.rol === 'admin' ? 'color-mix(in srgb, var(--brand) 14%, transparent)' : 'var(--bg-2)', color: u.rol === 'admin' ? 'var(--brand)' : 'var(--muted)', transition: 'all .2s' }}>
+                          <button onClick={() => handleCambiarRol(u.id, u.rol)} disabled={u.id === usuario.id}
+                            style={{ fontSize: 12.5, fontWeight: 700, padding: '4px 12px', borderRadius: 99, border: 'none', cursor: u.id === usuario.id ? 'not-allowed' : 'pointer', opacity: u.id === usuario.id ? 0.4 : 1, background: u.rol === 'admin' ? 'color-mix(in srgb, var(--brand) 14%, transparent)' : 'var(--bg-2)', color: u.rol === 'admin' ? 'var(--brand)' : 'var(--muted)', transition: 'all .2s' }}>
                             {u.rol}
                           </button>
                         </td>
                         <td style={{ padding: '14px 20px', textAlign: 'right' }}>
-                          <button onClick={() => handleEliminar(u._id)} disabled={u._id === usuario._id}
-                            style={{ color: 'var(--muted)', background: 'none', border: 'none', cursor: u._id === usuario._id ? 'not-allowed' : 'pointer', opacity: u._id === usuario._id ? 0.3 : 1, transition: 'color .2s' }}
-                            onMouseEnter={(e) => { if (u._id !== usuario._id) e.currentTarget.style.color = 'var(--neg)' }}
+                          <button onClick={() => handleEliminar(u.id)} disabled={u.id === usuario.id}
+                            style={{ color: 'var(--muted)', background: 'none', border: 'none', cursor: u.id === usuario.id ? 'not-allowed' : 'pointer', opacity: u.id === usuario.id ? 0.3 : 1, transition: 'color .2s' }}
+                            onMouseEnter={(e) => { if (u.id !== usuario.id) e.currentTarget.style.color = 'var(--neg)' }}
                             onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--muted)' }}>
                             <Trash2 size={15} />
                           </button>

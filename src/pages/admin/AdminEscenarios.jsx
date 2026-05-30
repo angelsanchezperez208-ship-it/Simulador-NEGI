@@ -11,8 +11,8 @@ const emptyForm = {
   nombre: '',
   descripcion: '',
   tipo_cambio: '',
-  arancel: '',
-  costo_logistico_mxn: '',
+  tasa_arancelaria: '',
+  costo_logistico: '',
   activo: true,
 }
 
@@ -47,13 +47,13 @@ export default function AdminEscenarios() {
 
   const abrirEdicion = (esc) => {
     setCreando(false)
-    setEditando(esc._id)
+    setEditando(esc.id)
     setForm({
       nombre: esc.nombre,
       descripcion: esc.descripcion,
       tipo_cambio: esc.tipo_cambio,
-      arancel: esc.arancel,
-      costo_logistico_mxn: esc.costo_logistico_mxn,
+      tasa_arancelaria: esc.tasa_arancelaria,
+      costo_logistico: esc.costo_logistico,
       activo: esc.activo ?? true,
     })
   }
@@ -82,8 +82,8 @@ export default function AdminEscenarios() {
       const payload = {
         ...form,
         tipo_cambio: parseFloat(form.tipo_cambio),
-        arancel: parseFloat(form.arancel),
-        costo_logistico_mxn: parseFloat(form.costo_logistico_mxn),
+        tasa_arancelaria: parseFloat(form.tasa_arancelaria),
+        costo_logistico: parseFloat(form.costo_logistico),
       }
       if (creando) {
         const nuevo = await createEscenario(payload, usuario.token)
@@ -91,7 +91,7 @@ export default function AdminEscenarios() {
         toast.success('Escenario creado')
       } else {
         const actualizado = await updateEscenario(editando, payload, usuario.token)
-        setEscenarios((prev) => prev.map((e) => (e._id === editando ? actualizado : e)))
+        setEscenarios((prev) => prev.map((e) => (e.id === editando ? actualizado : e)))
         toast.success('Escenario actualizado')
       }
       cancelar()
@@ -104,8 +104,8 @@ export default function AdminEscenarios() {
 
   const toggleActivo = async (esc) => {
     try {
-      const actualizado = await updateEscenario(esc._id, { activo: !esc.activo }, usuario.token)
-      setEscenarios((prev) => prev.map((e) => (e._id === esc._id ? actualizado : e)))
+      const actualizado = await updateEscenario(esc.id, { activo: !esc.activo }, usuario.token)
+      setEscenarios((prev) => prev.map((e) => (e.id === esc.id ? actualizado : e)))
       toast.success(`Escenario ${!esc.activo ? 'activado' : 'desactivado'}`)
     } catch (err) {
       toast.error(err.message)
@@ -133,7 +133,7 @@ export default function AdminEscenarios() {
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {escenarios.map((esc, i) => (
-            <Reveal key={esc._id} delay={i * 40}>
+            <Reveal key={esc.id} delay={i * 40}>
               <div style={{ background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 16, padding: '20px 22px', boxShadow: 'var(--shadow-sm)' }}>
                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
                   <div style={{ flex: 1 }}>
@@ -151,8 +151,8 @@ export default function AdminEscenarios() {
                     <p style={{ color: 'var(--muted)', fontSize: 13, marginBottom: 12 }}>{esc.descripcion}</p>
                     <div style={{ display: 'flex', gap: 18, fontSize: 12.5, color: 'var(--ink-2)', flexWrap: 'wrap' }}>
                       <span>T/C: <strong style={{ color: 'var(--ink)' }}>${parseFloat(esc.tipo_cambio).toFixed(2)}</strong></span>
-                      <span>Arancel: <strong style={{ color: 'var(--ink)' }}>{esc.arancel}%</strong></span>
-                      <span>Logística: <strong style={{ color: 'var(--ink)' }}>{formatCurrency(esc.costo_logistico_mxn)}</strong></span>
+                      <span>Arancel: <strong style={{ color: 'var(--ink)' }}>{(parseFloat(esc.tasa_arancelaria) * 100).toFixed(0)}%</strong></span>
+                      <span>Logística: <strong style={{ color: 'var(--ink)' }}>{formatCurrency(esc.costo_logistico)}</strong></span>
                     </div>
                   </div>
                   <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
@@ -191,8 +191,8 @@ export default function AdminEscenarios() {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, marginBottom: 16 }}>
                 <Field label="Nombre" name="nombre" value={form.nombre} onChange={handleChange} required />
                 <Field label="Tipo de cambio" name="tipo_cambio" type="number" step="0.01" value={form.tipo_cambio} onChange={handleChange} required />
-                <Field label="Arancel (%)" name="arancel" type="number" step="0.01" value={form.arancel} onChange={handleChange} required />
-                <Field label="Costo logístico (MXN)" name="costo_logistico_mxn" type="number" step="0.01" value={form.costo_logistico_mxn} onChange={handleChange} required />
+                <Field label="Tasa arancelaria (decimal, ej. 0.20)" name="tasa_arancelaria" type="number" step="0.01" value={form.tasa_arancelaria} onChange={handleChange} required />
+                <Field label="Costo logístico (MXN)" name="costo_logistico" type="number" step="0.01" value={form.costo_logistico} onChange={handleChange} required />
               </div>
               <div style={{ marginBottom: 16 }}>
                 <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: 'var(--ink-2)', marginBottom: 6 }}>Descripción</label>
