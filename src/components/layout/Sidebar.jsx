@@ -1,72 +1,109 @@
 import { NavLink } from 'react-router-dom'
 import {
-  Home,
-  Play,
-  Clock,
-  BookOpen,
-  Shield,
-  BarChart2,
-  Settings,
-  Sliders,
-  LogOut,
+  Home, Play, Clock, BookOpen, User, Shield, BarChart3,
+  Settings, LogOut,
 } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
-import { cn } from '../../lib/utils'
 
-const navLink = ({ isActive }) =>
-  cn(
-    'flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors',
-    isActive
-      ? 'bg-emerald-500/15 text-emerald-400'
-      : 'text-slate-400 hover:text-slate-100 hover:bg-slate-800'
-  )
+const NAV = [
+  { to: '/dashboard', label: 'Dashboard',  Icon: Home },
+  { to: '/simulador', label: 'Simulador',  Icon: Play },
+  { to: '/historial', label: 'Historial',  Icon: Clock },
+  { to: '/glosario',  label: 'Glosario',   Icon: BookOpen },
+  { to: '/perfil',    label: 'Mi Perfil',  Icon: User },
+]
+
+const NAV_ADMIN = [
+  { to: '/admin',            label: 'Panel Admin', Icon: Shield },
+  { to: '/admin/reportes',   label: 'Reportes',    Icon: BarChart3 },
+  { to: '/admin/escenarios', label: 'Escenarios',  Icon: Settings },
+]
 
 export default function Sidebar() {
   const { usuario, cerrarSesion } = useAuth()
+  const isAdmin = usuario?.rol === 'admin'
 
   return (
-    <aside className="w-56 shrink-0 border-r border-slate-800 bg-slate-950 flex flex-col py-4 px-3">
-      <nav className="flex flex-col gap-1 flex-1">
-        <NavLink to="/dashboard" className={navLink}>
-          <Home size={16} /> Dashboard
-        </NavLink>
-        <NavLink to="/simulador" className={navLink}>
-          <Play size={16} /> Simulador
-        </NavLink>
-        <NavLink to="/historial" className={navLink}>
-          <Clock size={16} /> Historial
-        </NavLink>
-        <NavLink to="/glosario" className={navLink}>
-          <BookOpen size={16} /> Glosario
-        </NavLink>
+    <aside style={{
+      width: 256, flexShrink: 0, height: '100vh', position: 'sticky', top: 0,
+      background: 'var(--surface)', borderRight: '1px solid var(--line)',
+      display: 'flex', flexDirection: 'column', padding: 18,
+    }}>
+      {/* Logo */}
+      <div style={{ padding: '8px 8px 20px', display: 'flex', alignItems: 'center', gap: 12 }}>
+        <img
+          src="/anahuac-logo.png"
+          alt="Anáhuac"
+          style={{ width: 40, height: 40, borderRadius: 11, boxShadow: '0 4px 10px rgba(251,100,0,0.28)' }}
+        />
+        <div style={{ lineHeight: 1.1 }}>
+          <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 17, letterSpacing: '-0.02em', color: 'var(--ink)' }}>
+            Simulador <span style={{ color: 'var(--brand)' }}>NEGI</span>
+          </div>
+          <div style={{ fontSize: 11, color: 'var(--muted)', fontWeight: 600 }}>Universidad Anáhuac Mayab</div>
+        </div>
+      </div>
 
-        {usuario?.rol === 'admin' && (
+      {/* Navigation */}
+      <nav style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 3, overflowY: 'auto' }}>
+        {NAV.map(({ to, label, Icon }) => (
+          <SidebarItem key={to} to={to} label={label} Icon={Icon} />
+        ))}
+
+        {isAdmin && (
           <>
-            <div className="mt-4 mb-1 px-3 text-xs font-semibold uppercase tracking-wider text-slate-600">
+            <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.08em', color: 'var(--muted)', padding: '18px 14px 8px' }}>
               Administración
             </div>
-            <NavLink to="/admin" end className={navLink}>
-              <Shield size={16} /> Panel Admin
-            </NavLink>
-            <NavLink to="/admin/reportes" className={navLink}>
-              <BarChart2 size={16} /> Reportes
-            </NavLink>
-            <NavLink to="/admin/escenarios" className={navLink}>
-              <Settings size={16} /> Escenarios
-            </NavLink>
-            <NavLink to="/admin/configuracion" className={navLink}>
-              <Sliders size={16} /> Configuración
-            </NavLink>
+            {NAV_ADMIN.map(({ to, label, Icon }) => (
+              <SidebarItem key={to} to={to} label={label} Icon={Icon} />
+            ))}
           </>
         )}
       </nav>
 
+      {/* Logout */}
       <button
         onClick={cerrarSesion}
-        className="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+        style={{ display: 'flex', alignItems: 'center', gap: 13, padding: '11px 14px', borderRadius: 12, fontSize: 15, fontWeight: 600, color: 'var(--muted)', transition: 'all .2s', width: '100%', textAlign: 'left' }}
+        onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(229,72,77,0.10)'; e.currentTarget.style.color = 'var(--neg)' }}
+        onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--muted)' }}
       >
-        <LogOut size={16} /> Cerrar sesión
+        <LogOut size={19} /> Cerrar sesión
       </button>
     </aside>
+  )
+}
+
+function SidebarItem({ to, label, Icon }) {
+  return (
+    <NavLink
+      to={to}
+      style={({ isActive }) => ({
+        display: 'flex', alignItems: 'center', gap: 13, padding: '11px 14px', borderRadius: 12,
+        fontSize: 15, fontWeight: 600, textDecoration: 'none', position: 'relative',
+        color: isActive ? 'var(--brand)' : 'var(--ink-2)',
+        background: isActive ? 'var(--brand-tint)' : 'transparent',
+        transition: 'all .2s',
+      })}
+      onMouseEnter={(e) => {
+        const isActive = e.currentTarget.getAttribute('aria-current') === 'page'
+        if (!isActive) { e.currentTarget.style.background = 'var(--bg-2)'; e.currentTarget.style.color = 'var(--ink)' }
+      }}
+      onMouseLeave={(e) => {
+        const isActive = e.currentTarget.getAttribute('aria-current') === 'page'
+        if (!isActive) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--ink-2)' }
+      }}
+    >
+      {({ isActive }) => (
+        <>
+          {isActive && (
+            <span style={{ position: 'absolute', left: -18, top: '50%', transform: 'translateY(-50%)', width: 4, height: 22, borderRadius: 99, background: 'var(--brand)' }} />
+          )}
+          <Icon size={19} />
+          {label}
+        </>
+      )}
+    </NavLink>
   )
 }

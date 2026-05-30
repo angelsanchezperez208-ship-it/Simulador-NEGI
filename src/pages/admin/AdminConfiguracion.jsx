@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { useAuth } from '../../context/AuthContext'
 import { getConfiguracion, updateConfiguracion } from '../../api/configuracion'
+import { Reveal } from '../../components/ui'
 import Spinner from '../../components/Spinner'
 
 const CLAVES = [
@@ -53,47 +54,78 @@ export default function AdminConfiguracion() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-100">Configuración global</h1>
-        <p className="text-slate-400 text-sm mt-1">
-          Parámetros que afectan el comportamiento del simulador para todos los usuarios.
-        </p>
-      </div>
+    <div style={{ maxWidth: 680, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 24 }}>
+      <Reveal>
+        <div>
+          <h1 style={{ fontSize: 'clamp(28px, 3.5vw, 38px)' }}>Configuración global</h1>
+          <p style={{ color: 'var(--muted)', fontSize: 15, marginTop: 6 }}>
+            Parámetros que afectan el comportamiento del simulador para todos los usuarios.
+          </p>
+        </div>
+      </Reveal>
 
       {loading ? (
-        <div className="flex justify-center py-12"><Spinner /></div>
+        <div style={{ display: 'flex', justifyContent: 'center', padding: 48 }}><Spinner /></div>
       ) : (
-        <div className="space-y-4">
-          {CLAVES.map(({ clave, label, step }) => (
-            <div
-              key={clave}
-              className="bg-slate-900 border border-slate-800 rounded-xl p-5"
-            >
-              <label className="block text-sm font-medium text-slate-300 mb-3">{label}</label>
-              <div className="flex gap-3">
-                <input
-                  type="number"
-                  step={step}
-                  min="0"
-                  value={editValues[clave] ?? ''}
-                  onChange={(e) => handleChange(clave, e.target.value)}
-                  className="flex-1 bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-sm text-slate-100 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition"
-                />
-                <button
-                  onClick={() => handleGuardar(clave)}
-                  disabled={saving[clave] || String(editValues[clave]) === String(config[clave])}
-                  className="bg-emerald-500 hover:bg-emerald-400 disabled:opacity-40 disabled:cursor-not-allowed text-white font-medium px-4 py-2 rounded-md text-sm transition-colors flex items-center gap-2"
-                >
-                  {saving[clave] ? <Spinner className="h-4 w-4" /> : null}
-                  Guardar
-                </button>
-              </div>
-              <p className="text-xs text-slate-600 mt-2">
-                Valor actual: <span className="text-slate-400">{config[clave] ?? '—'}</span>
-              </p>
-            </div>
-          ))}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          {CLAVES.map(({ clave, label, step }, i) => {
+            const unchanged = String(editValues[clave]) === String(config[clave])
+            return (
+              <Reveal key={clave} delay={i * 60}>
+                <div style={{ background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 16, padding: '20px 22px', boxShadow: 'var(--shadow-sm)' }}>
+                  <label style={{ display: 'block', fontSize: 13.5, fontWeight: 700, color: 'var(--ink-2)', marginBottom: 12 }}>{label}</label>
+                  <div style={{ display: 'flex', gap: 10 }}>
+                    <input
+                      type="number"
+                      step={step}
+                      min="0"
+                      value={editValues[clave] ?? ''}
+                      onChange={(e) => handleChange(clave, e.target.value)}
+                      style={{
+                        flex: 1,
+                        background: 'var(--input-bg)',
+                        border: '1.5px solid var(--line-strong)',
+                        borderRadius: 10,
+                        padding: '10px 14px',
+                        fontSize: 14,
+                        color: 'var(--ink)',
+                        outline: 'none',
+                        transition: 'border-color .2s',
+                      }}
+                      onFocus={(e) => { e.target.style.borderColor = 'var(--brand)' }}
+                      onBlur={(e) => { e.target.style.borderColor = 'var(--line-strong)' }}
+                    />
+                    <button
+                      onClick={() => handleGuardar(clave)}
+                      disabled={saving[clave] || unchanged}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 6,
+                        padding: '10px 20px',
+                        background: 'var(--brand)',
+                        color: '#fff',
+                        fontWeight: 700,
+                        fontSize: 13.5,
+                        borderRadius: 10,
+                        border: 'none',
+                        cursor: (saving[clave] || unchanged) ? 'not-allowed' : 'pointer',
+                        opacity: (saving[clave] || unchanged) ? 0.45 : 1,
+                        boxShadow: unchanged ? 'none' : 'var(--shadow-brand)',
+                        transition: 'opacity .2s',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {saving[clave] && <Spinner />}
+                      Guardar
+                    </button>
+                  </div>
+                  <p style={{ fontSize: 12, color: 'var(--muted)', marginTop: 10 }}>
+                    Valor actual:{' '}
+                    <span style={{ color: 'var(--ink-2)', fontWeight: 700 }}>{config[clave] ?? '—'}</span>
+                  </p>
+                </div>
+              </Reveal>
+            )
+          })}
         </div>
       )}
     </div>

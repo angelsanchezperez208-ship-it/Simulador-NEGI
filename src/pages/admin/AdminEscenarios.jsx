@@ -4,6 +4,7 @@ import { Plus, Edit2 } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { getEscenarios, updateEscenario, createEscenario } from '../../api/escenarios'
 import { formatCurrency } from '../../lib/utils'
+import { Reveal } from '../../components/ui'
 import Spinner from '../../components/Spinner'
 
 const emptyForm = {
@@ -13,6 +14,19 @@ const emptyForm = {
   arancel: '',
   costo_logistico_mxn: '',
   activo: true,
+}
+
+const inputStyle = {
+  width: '100%',
+  background: 'var(--input-bg)',
+  border: '1.5px solid var(--line-strong)',
+  borderRadius: 10,
+  padding: '10px 14px',
+  fontSize: 14,
+  color: 'var(--ink)',
+  outline: 'none',
+  transition: 'border-color .2s',
+  boxSizing: 'border-box',
 }
 
 export default function AdminEscenarios() {
@@ -99,119 +113,129 @@ export default function AdminEscenarios() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-slate-100">Escenarios</h1>
-        <button
-          onClick={abrirCreacion}
-          className="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-white text-sm font-medium px-4 py-2 rounded-md transition-colors"
-        >
-          <Plus size={15} /> Nuevo escenario
-        </button>
-      </div>
+    <div style={{ maxWidth: 860, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 24 }}>
+      <Reveal>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+          <h1 style={{ fontSize: 'clamp(28px, 3.5vw, 38px)' }}>Escenarios</h1>
+          <button
+            onClick={abrirCreacion}
+            style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 20px', background: 'var(--brand)', color: '#fff', fontWeight: 700, fontSize: 14, borderRadius: 10, border: 'none', cursor: 'pointer', boxShadow: 'var(--shadow-brand)', transition: 'opacity .2s' }}
+            onMouseEnter={(e) => { e.currentTarget.style.opacity = '0.88' }}
+            onMouseLeave={(e) => { e.currentTarget.style.opacity = '1' }}
+          >
+            <Plus size={15} /> Nuevo escenario
+          </button>
+        </div>
+      </Reveal>
 
       {loading ? (
-        <div className="flex justify-center py-12"><Spinner /></div>
+        <div style={{ display: 'flex', justifyContent: 'center', padding: 48 }}><Spinner /></div>
       ) : (
-        <div className="space-y-3">
-          {escenarios.map((esc) => (
-            <div
-              key={esc._id}
-              className="bg-slate-900 border border-slate-800 rounded-xl p-5"
-            >
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <p className="font-semibold text-slate-100">{esc.nombre}</p>
-                    <span
-                      className={`text-[10px] px-1.5 py-0.5 rounded-full border font-medium ${
-                        esc.activo
-                          ? 'text-emerald-400 border-emerald-500/30 bg-emerald-500/10'
-                          : 'text-slate-500 border-slate-700 bg-slate-800'
-                      }`}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {escenarios.map((esc, i) => (
+            <Reveal key={esc._id} delay={i * 40}>
+              <div style={{ background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 16, padding: '20px 22px', boxShadow: 'var(--shadow-sm)' }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                      <p style={{ fontWeight: 700, fontSize: 15.5, color: 'var(--ink)' }}>{esc.nombre}</p>
+                      <span style={{
+                        fontSize: 10.5, padding: '2px 8px', borderRadius: 99, fontWeight: 700,
+                        background: esc.activo ? 'color-mix(in srgb, #16A34A 14%, transparent)' : 'var(--surface-2)',
+                        color: esc.activo ? '#16A34A' : 'var(--muted)',
+                        border: `1px solid ${esc.activo ? 'color-mix(in srgb, #16A34A 30%, transparent)' : 'var(--line)'}`,
+                      }}>
+                        {esc.activo ? 'activo' : 'inactivo'}
+                      </span>
+                    </div>
+                    <p style={{ color: 'var(--muted)', fontSize: 13, marginBottom: 12 }}>{esc.descripcion}</p>
+                    <div style={{ display: 'flex', gap: 18, fontSize: 12.5, color: 'var(--ink-2)', flexWrap: 'wrap' }}>
+                      <span>T/C: <strong style={{ color: 'var(--ink)' }}>${parseFloat(esc.tipo_cambio).toFixed(2)}</strong></span>
+                      <span>Arancel: <strong style={{ color: 'var(--ink)' }}>{esc.arancel}%</strong></span>
+                      <span>Logística: <strong style={{ color: 'var(--ink)' }}>{formatCurrency(esc.costo_logistico_mxn)}</strong></span>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+                    <button
+                      onClick={() => toggleActivo(esc)}
+                      style={{ fontSize: 12.5, padding: '6px 14px', borderRadius: 8, border: '1px solid var(--line-strong)', background: 'var(--surface-2)', color: 'var(--ink-2)', cursor: 'pointer', fontWeight: 600, transition: 'all .2s' }}
+                      onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--brand)'; e.currentTarget.style.color = 'var(--brand)' }}
+                      onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--line-strong)'; e.currentTarget.style.color = 'var(--ink-2)' }}
                     >
-                      {esc.activo ? 'activo' : 'inactivo'}
-                    </span>
+                      {esc.activo ? 'Desactivar' : 'Activar'}
+                    </button>
+                    <button
+                      onClick={() => abrirEdicion(esc)}
+                      style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12.5, padding: '6px 14px', borderRadius: 8, border: '1.5px solid color-mix(in srgb, var(--brand) 35%, transparent)', background: 'color-mix(in srgb, var(--brand) 10%, transparent)', color: 'var(--brand)', cursor: 'pointer', fontWeight: 700, transition: 'all .2s' }}
+                      onMouseEnter={(e) => { e.currentTarget.style.background = 'color-mix(in srgb, var(--brand) 18%, transparent)' }}
+                      onMouseLeave={(e) => { e.currentTarget.style.background = 'color-mix(in srgb, var(--brand) 10%, transparent)' }}
+                    >
+                      <Edit2 size={12} /> Editar
+                    </button>
                   </div>
-                  <p className="text-slate-500 text-xs mb-3">{esc.descripcion}</p>
-                  <div className="flex gap-4 text-xs text-slate-400">
-                    <span>T/C: <strong className="text-slate-200">${parseFloat(esc.tipo_cambio).toFixed(2)}</strong></span>
-                    <span>Arancel: <strong className="text-slate-200">{esc.arancel}%</strong></span>
-                    <span>Logística: <strong className="text-slate-200">{formatCurrency(esc.costo_logistico_mxn)}</strong></span>
-                  </div>
-                </div>
-                <div className="flex gap-2 shrink-0">
-                  <button
-                    onClick={() => toggleActivo(esc)}
-                    className="text-xs text-slate-400 hover:text-slate-100 border border-slate-700 hover:border-slate-500 px-3 py-1.5 rounded-md transition-colors"
-                  >
-                    {esc.activo ? 'Desactivar' : 'Activar'}
-                  </button>
-                  <button
-                    onClick={() => abrirEdicion(esc)}
-                    className="flex items-center gap-1 text-xs text-emerald-400 hover:text-emerald-300 border border-emerald-500/30 hover:border-emerald-500/60 px-3 py-1.5 rounded-md transition-colors"
-                  >
-                    <Edit2 size={12} /> Editar
-                  </button>
                 </div>
               </div>
-            </div>
+            </Reveal>
           ))}
         </div>
       )}
 
-      {/* Formulario edición / creación */}
+      {/* Form — edit or create */}
       {(editando || creando) && (
-        <div className="bg-slate-900 border border-emerald-500/30 rounded-xl p-6">
-          <h2 className="text-base font-semibold text-slate-100 mb-4">
-            {creando ? 'Nuevo escenario' : 'Editar escenario'}
-          </h2>
-          <form onSubmit={handleGuardar} className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Field label="Nombre" name="nombre" value={form.nombre} onChange={handleChange} required />
-              <Field label="Tipo de cambio" name="tipo_cambio" type="number" step="0.01" value={form.tipo_cambio} onChange={handleChange} required />
-              <Field label="Arancel (%)" name="arancel" type="number" step="0.01" value={form.arancel} onChange={handleChange} required />
-              <Field label="Costo logístico (MXN)" name="costo_logistico_mxn" type="number" step="0.01" value={form.costo_logistico_mxn} onChange={handleChange} required />
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-slate-300">Descripción</label>
-              <textarea
-                name="descripcion"
-                value={form.descripcion}
-                onChange={handleChange}
-                rows={2}
-                className="w-full bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 resize-none"
-              />
-            </div>
-            <label className="flex items-center gap-2 text-sm text-slate-300">
-              <input
-                type="checkbox"
-                name="activo"
-                checked={form.activo}
-                onChange={handleChange}
-                className="accent-emerald-500"
-              />
-              Activo
-            </label>
-            <div className="flex gap-3">
-              <button
-                type="submit"
-                disabled={saving}
-                className="bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-white font-semibold px-5 py-2 rounded-md text-sm transition-colors flex items-center gap-2"
-              >
-                {saving ? <Spinner className="h-4 w-4" /> : null}
-                {saving ? 'Guardando...' : 'Guardar'}
-              </button>
-              <button
-                type="button"
-                onClick={cancelar}
-                className="border border-slate-700 text-slate-400 hover:text-slate-100 hover:border-slate-500 px-5 py-2 rounded-md text-sm transition-colors"
-              >
-                Cancelar
-              </button>
-            </div>
-          </form>
-        </div>
+        <Reveal>
+          <div style={{ background: 'var(--surface)', border: '1.5px solid color-mix(in srgb, var(--brand) 35%, transparent)', borderRadius: 16, padding: 26, boxShadow: 'var(--shadow-sm)' }}>
+            <h2 style={{ fontSize: 17, fontWeight: 700, color: 'var(--ink)', marginBottom: 20 }}>
+              {creando ? 'Nuevo escenario' : 'Editar escenario'}
+            </h2>
+            <form onSubmit={handleGuardar}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, marginBottom: 16 }}>
+                <Field label="Nombre" name="nombre" value={form.nombre} onChange={handleChange} required />
+                <Field label="Tipo de cambio" name="tipo_cambio" type="number" step="0.01" value={form.tipo_cambio} onChange={handleChange} required />
+                <Field label="Arancel (%)" name="arancel" type="number" step="0.01" value={form.arancel} onChange={handleChange} required />
+                <Field label="Costo logístico (MXN)" name="costo_logistico_mxn" type="number" step="0.01" value={form.costo_logistico_mxn} onChange={handleChange} required />
+              </div>
+              <div style={{ marginBottom: 16 }}>
+                <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: 'var(--ink-2)', marginBottom: 6 }}>Descripción</label>
+                <textarea
+                  name="descripcion"
+                  value={form.descripcion}
+                  onChange={handleChange}
+                  rows={2}
+                  style={{ ...inputStyle, resize: 'none', fontFamily: 'inherit' }}
+                />
+              </div>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, color: 'var(--ink-2)', marginBottom: 20, cursor: 'pointer' }}>
+                <input
+                  type="checkbox"
+                  name="activo"
+                  checked={form.activo}
+                  onChange={handleChange}
+                  style={{ accentColor: 'var(--brand)', width: 16, height: 16 }}
+                />
+                Activo
+              </label>
+              <div style={{ display: 'flex', gap: 10 }}>
+                <button
+                  type="submit"
+                  disabled={saving}
+                  style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 22px', background: 'var(--brand)', color: '#fff', fontWeight: 700, fontSize: 14, borderRadius: 10, border: 'none', cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.6 : 1, boxShadow: 'var(--shadow-brand)', transition: 'opacity .2s' }}
+                >
+                  {saving && <Spinner />}
+                  {saving ? 'Guardando…' : 'Guardar'}
+                </button>
+                <button
+                  type="button"
+                  onClick={cancelar}
+                  style={{ padding: '10px 22px', background: 'var(--surface-2)', color: 'var(--ink-2)', fontWeight: 600, fontSize: 14, borderRadius: 10, border: '1px solid var(--line-strong)', cursor: 'pointer', transition: 'all .2s' }}
+                  onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--ink)' }}
+                  onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--ink-2)' }}
+                >
+                  Cancelar
+                </button>
+              </div>
+            </form>
+          </div>
+        </Reveal>
       )}
     </div>
   )
@@ -219,11 +243,13 @@ export default function AdminEscenarios() {
 
 function Field({ label, name, ...rest }) {
   return (
-    <div className="space-y-1.5">
-      <label className="text-sm font-medium text-slate-300">{label}</label>
+    <div>
+      <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: 'var(--ink-2)', marginBottom: 6 }}>{label}</label>
       <input
         name={name}
-        className="w-full bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition"
+        style={inputStyle}
+        onFocus={(e) => { e.target.style.borderColor = 'var(--brand)' }}
+        onBlur={(e) => { e.target.style.borderColor = 'var(--line-strong)' }}
         {...rest}
       />
     </div>

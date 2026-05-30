@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
+import { ThemeProvider } from './context/ThemeContext'
 import { Toaster } from 'sonner'
 
 import Landing from './pages/Landing'
@@ -15,6 +16,7 @@ import Simulador from './pages/Simulador'
 import Historial from './pages/Historial'
 import ResultadoDetalle from './pages/ResultadoDetalle'
 import Glosario from './pages/Glosario'
+import Perfil from './pages/Perfil'
 
 import AdminPanel from './pages/admin/AdminPanel'
 import AdminReportes from './pages/admin/AdminReportes'
@@ -24,6 +26,7 @@ import AdminConfiguracion from './pages/admin/AdminConfiguracion'
 export default function App() {
   return (
     <BrowserRouter>
+      <ThemeProvider>
       <AuthProvider>
         <Toaster richColors position="top-right" theme="dark" />
         <Routes>
@@ -40,6 +43,7 @@ export default function App() {
               <Route path="/historial" element={<Historial />} />
               <Route path="/simulacion/:id" element={<ResultadoDetalle />} />
               <Route path="/glosario" element={<Glosario />} />
+              <Route path="/perfil" element={<Perfil />} />
             </Route>
           </Route>
 
@@ -54,6 +58,7 @@ export default function App() {
           </Route>
         </Routes>
       </AuthProvider>
+      </ThemeProvider>
     </BrowserRouter>
   )
 }
