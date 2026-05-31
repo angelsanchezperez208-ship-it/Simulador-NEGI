@@ -9,9 +9,9 @@ export const getUsuarios = async (token, page = 1, limit = 10) => {
   const res = await fetch(`${API}/api/usuarios?page=${page}&limit=${limit}`, {
     headers: authHeaders(token),
   })
-  const data = await res.json()
-  if (!res.ok) throw new Error(data.message || 'Error al cargar usuarios')
-  return data
+  const result = await res.json()
+  if (!res.ok) throw new Error(result.message || 'Error al cargar usuarios')
+  return { ...result, usuarios: result.data }
 }
 
 export const cambiarRol = async (id, rol, token) => {

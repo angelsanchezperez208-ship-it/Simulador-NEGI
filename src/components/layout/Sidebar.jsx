@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
 import {
   Home, Play, Clock, BookOpen, User, Shield, BarChart3,
   Settings, LogOut,
@@ -21,16 +21,33 @@ const NAV_ADMIN = [
 
 export default function Sidebar() {
   const { usuario, cerrarSesion } = useAuth()
+  const navigate = useNavigate()
   const isAdmin = usuario?.rol === 'admin'
 
+  const handleLogout = () => {
+    cerrarSesion()
+    navigate('/login')
+  }
+
   return (
-    <aside style={{
-      width: 256, flexShrink: 0, height: '100vh', position: 'sticky', top: 0,
-      background: 'var(--surface)', borderRight: '1px solid var(--line)',
-      display: 'flex', flexDirection: 'column', padding: 18,
-    }}>
+    <aside
+      style={{
+        width: 256,
+        flexShrink: 0,
+        minHeight: '100vh',
+        height: '100vh',
+        position: 'sticky',
+        top: 0,
+        background: 'var(--surface)',
+        borderRight: '1px solid var(--line)',
+        display: 'flex',
+        flexDirection: 'column',
+        padding: 18,
+        boxSizing: 'border-box',
+      }}
+    >
       {/* Logo */}
-      <div style={{ padding: '8px 8px 20px', display: 'flex', alignItems: 'center', gap: 12 }}>
+      <div style={{ padding: '8px 8px 20px', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
         <img
           src="/anahuac-logo.png"
           alt="Anáhuac"
@@ -44,8 +61,8 @@ export default function Sidebar() {
         </div>
       </div>
 
-      {/* Navigation */}
-      <nav style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 3, overflowY: 'auto' }}>
+      {/* Navigation (grows to fill available space) */}
+      <nav style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 3, overflowY: 'auto', minHeight: 0 }}>
         {NAV.map(({ to, label, Icon }) => (
           <SidebarItem key={to} to={to} label={label} Icon={Icon} />
         ))}
@@ -60,17 +77,19 @@ export default function Sidebar() {
             ))}
           </>
         )}
-      </nav>
 
-      {/* Logout */}
-      <button
-        onClick={cerrarSesion}
-        style={{ display: 'flex', alignItems: 'center', gap: 13, padding: '11px 14px', borderRadius: 12, fontSize: 15, fontWeight: 600, color: 'var(--muted)', transition: 'all .2s', width: '100%', textAlign: 'left' }}
-        onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(229,72,77,0.10)'; e.currentTarget.style.color = 'var(--neg)' }}
-        onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--muted)' }}
-      >
-        <LogOut size={19} /> Cerrar sesión
-      </button>
+        <div style={{ borderTop: '1px solid var(--line)', marginTop: 16, paddingTop: 12 }}>
+          <button onClick={handleLogout} style={{
+            display: 'flex', alignItems: 'center', gap: 13, width: '100%',
+            padding: '12px 14px', borderRadius: 12, fontSize: 15, fontWeight: 700,
+            color: '#F87171', background: 'rgba(248,113,113,0.10)',
+            border: '1px solid rgba(248,113,113,0.30)', cursor: 'pointer',
+            textAlign: 'left', transition: 'all .2s', fontFamily: 'inherit',
+          }}>
+            <LogOut size={19} /> Cerrar sesión
+          </button>
+        </div>
+      </nav>
     </aside>
   )
 }
@@ -79,6 +98,7 @@ function SidebarItem({ to, label, Icon }) {
   return (
     <NavLink
       to={to}
+      end
       style={({ isActive }) => ({
         display: 'flex', alignItems: 'center', gap: 13, padding: '11px 14px', borderRadius: 12,
         fontSize: 15, fontWeight: 600, textDecoration: 'none', position: 'relative',

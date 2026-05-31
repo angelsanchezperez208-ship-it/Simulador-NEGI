@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts'
-import { Users, BarChart3, TrendingUp, Trash2, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Users, BarChart3, TrendingUp, Trash2, ChevronLeft, ChevronRight, AlertTriangle } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { getResumen } from '../../api/reportes'
 import { getUsuarios, cambiarRol, eliminarUsuario } from '../../api/usuarios'
@@ -19,22 +19,35 @@ export default function AdminPanel() {
   const [usPage, setUsPage] = useState(1)
   const [usTotal, setUsTotal] = useState({ total: 0, totalPages: 1 })
   const [loadingUs, setLoadingUs] = useState(true)
+  const [errorResumen, setErrorResumen] = useState('')
+  const [errorUs, setErrorUs] = useState('')
 
   useEffect(() => {
+    setErrorResumen('')
     getResumen(usuario.token)
       .then(setResumen)
-      .catch(() => toast.error('Error al cargar resumen'))
+      .catch((err) => {
+        const msg = err?.message || 'Error al cargar resumen'
+        setErrorResumen(msg)
+        toast.error(msg)
+      })
       .finally(() => setLoadingResumen(false))
   }, [usuario.token])
 
   useEffect(() => {
     setLoadingUs(true)
+    setErrorUs('')
     getUsuarios(usuario.token, usPage, 8)
       .then((data) => {
-        setUsuarios(data.usuarios || data)
+        const list = Array.isArray(data.usuarios) ? data.usuarios : []
+        setUsuarios(list)
         setUsTotal({ total: data.total ?? 0, totalPages: data.totalPages ?? 1 })
       })
-      .catch(() => toast.error('Error al cargar usuarios'))
+      .catch((err) => {
+        const msg = err?.message || 'Error al cargar usuarios'
+        setErrorUs(msg)
+        toast.error(msg)
+      })
       .finally(() => setLoadingUs(false))
   }, [usuario.token, usPage])
 
@@ -72,6 +85,8 @@ export default function AdminPanel() {
       {/* Stats */}
       {loadingResumen ? (
         <div style={{ display: 'flex', justifyContent: 'center', padding: 32 }}><Spinner /></div>
+      ) : errorResumen ? (
+        <ErrorBox title="No se pudo cargar el resumen" message={errorResumen} />
       ) : resumen && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 18 }}>
           <AdminStatCard Icon={Users}    color="#2F6BFF" label="Total usuarios"     value={resumen.total_usuarios ?? 0} />
@@ -106,6 +121,8 @@ export default function AdminPanel() {
           <h2 style={{ fontSize: 18, marginBottom: 16 }}>Usuarios</h2>
           {loadingUs ? (
             <div style={{ display: 'flex', justifyContent: 'center', padding: 32 }}><Spinner /></div>
+          ) : errorUs ? (
+            <ErrorBox title="No se pudieron cargar los usuarios" message={errorUs} />
           ) : (
             <>
               <div style={{ background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 16, overflow: 'hidden', boxShadow: 'var(--shadow-sm)' }}>
@@ -161,6 +178,20 @@ export default function AdminPanel() {
           )}
         </div>
       </Reveal>
+    </div>
+  )
+}
+
+function ErrorBox({ title, message }) {
+  return (
+    <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start', background: 'color-mix(in srgb, #E5484D 8%, var(--surface))', border: '1px solid color-mix(in srgb, #E5484D 35%, transparent)', borderRadius: 14, padding: 18, boxShadow: 'var(--shadow-sm)' }}>
+      <span style={{ width: 36, height: 36, borderRadius: 10, flexShrink: 0, display: 'grid', placeItems: 'center', background: 'color-mix(in srgb, #E5484D 14%, transparent)', color: '#E5484D' }}>
+        <AlertTriangle size={19} />
+      </span>
+      <div style={{ minWidth: 0 }}>
+        <div style={{ fontWeight: 700, fontSize: 14.5, color: 'var(--ink)' }}>{title}</div>
+        <div style={{ fontSize: 13, color: 'var(--ink-2)', marginTop: 4, wordBreak: 'break-word' }}>{message}</div>
+      </div>
     </div>
   )
 }

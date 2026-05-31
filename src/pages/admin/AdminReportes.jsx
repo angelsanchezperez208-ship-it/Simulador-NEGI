@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
+import { AlertTriangle } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { getReporteUsuario, getReporteEscenario } from '../../api/reportes'
 import { getUsuarios } from '../../api/usuarios'
@@ -18,14 +19,20 @@ export default function AdminReportes() {
   const [loadingUs, setLoadingUs] = useState(false)
   const [reporteEsc, setReporteEsc] = useState(null)
   const [loadingEsc, setLoadingEsc] = useState(false)
+  const [errorInicial, setErrorInicial] = useState('')
 
   useEffect(() => {
+    setErrorInicial('')
     Promise.all([getUsuarios(usuario.token, 1, 100), getEscenarios(usuario.token)])
       .then(([u, e]) => {
-        setUsuarios(u.usuarios || u)
+        setUsuarios(Array.isArray(u.usuarios) ? u.usuarios : [])
         setEscenarios(Array.isArray(e) ? e : e.escenarios || [])
       })
-      .catch(() => toast.error('Error al cargar datos'))
+      .catch((err) => {
+        const msg = err?.message || 'Error al cargar datos'
+        setErrorInicial(msg)
+        toast.error(msg)
+      })
   }, [usuario.token])
 
   const cargarReporteUs = async () => {
@@ -52,6 +59,18 @@ export default function AdminReportes() {
       <Reveal>
         <h1 style={{ fontSize: 'clamp(28px, 3.5vw, 38px)' }}>Reportes</h1>
       </Reveal>
+
+      {errorInicial && (
+        <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start', background: 'color-mix(in srgb, #E5484D 8%, var(--surface))', border: '1px solid color-mix(in srgb, #E5484D 35%, transparent)', borderRadius: 14, padding: 18, boxShadow: 'var(--shadow-sm)' }}>
+          <span style={{ width: 36, height: 36, borderRadius: 10, flexShrink: 0, display: 'grid', placeItems: 'center', background: 'color-mix(in srgb, #E5484D 14%, transparent)', color: '#E5484D' }}>
+            <AlertTriangle size={19} />
+          </span>
+          <div style={{ minWidth: 0 }}>
+            <div style={{ fontWeight: 700, fontSize: 14.5, color: 'var(--ink)' }}>No se pudieron cargar los datos</div>
+            <div style={{ fontSize: 13, color: 'var(--ink-2)', marginTop: 4, wordBreak: 'break-word' }}>{errorInicial}</div>
+          </div>
+        </div>
+      )}
 
       {/* Per student */}
       <Reveal delay={60}>

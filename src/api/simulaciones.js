@@ -20,9 +20,9 @@ export const getHistorial = async (token, page = 1, limit = 10) => {
   const res = await fetch(`${API}/api/simulaciones?page=${page}&limit=${limit}`, {
     headers: authHeaders(token),
   })
-  const data = await res.json()
-  if (!res.ok) throw new Error(data.message || 'Error al cargar historial')
-  return data
+  const result = await res.json()
+  if (!res.ok) throw new Error(result.message || 'Error al cargar historial')
+  return { ...result, simulaciones: result.data }
 }
 
 export const getDetalle = async (id, token) => {
