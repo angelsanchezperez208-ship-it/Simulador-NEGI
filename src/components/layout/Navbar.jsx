@@ -1,11 +1,9 @@
 import { Link } from 'react-router-dom'
-import { Bell, Sun, Moon } from 'lucide-react'
+import { Bell } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
-import { useTheme } from '../../context/ThemeContext'
 
 export default function Navbar() {
   const { usuario } = useAuth()
-  const { theme, toggleTheme } = useTheme()
 
   const initials = usuario?.nombre
     ? usuario.nombre.split(' ').slice(0, 2).map((w) => w[0]).join('').toUpperCase()
@@ -27,17 +25,6 @@ export default function Navbar() {
         onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--ink-2)'; e.currentTarget.style.borderColor = 'var(--line-strong)' }}>
         <Bell size={19} />
         <span style={{ position: 'absolute', top: 9, right: 9, width: 7, height: 7, borderRadius: 99, background: 'var(--brand)' }} />
-      </button>
-
-      {/* Theme toggle */}
-      <button
-        onClick={toggleTheme}
-        aria-label="Cambiar tema"
-        style={{ width: 40, height: 40, borderRadius: 11, display: 'grid', placeItems: 'center', color: 'var(--ink-2)', border: '1.5px solid var(--line-strong)', background: 'var(--surface)', transition: 'all .2s' }}
-        onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--brand)'; e.currentTarget.style.borderColor = 'var(--brand)' }}
-        onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--ink-2)'; e.currentTarget.style.borderColor = 'var(--line-strong)' }}
-      >
-        {theme === 'dark' ? <Sun size={19} /> : <Moon size={19} />}
       </button>
 
       {/* User chip */}

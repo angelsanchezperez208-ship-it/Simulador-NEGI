@@ -61,7 +61,7 @@ function Stepper({ step }) {
 }
 
 export default function Simulador() {
-  const { usuario } = useAuth()
+  const { usuario, updateXP } = useAuth()
   const navigate = useNavigate()
 
   const [step, setStep] = useState(0)
@@ -110,6 +110,7 @@ export default function Simulador() {
         comisiones: form.comisiones ? parseFloat(form.comisiones) : 0,
       }
       const data = await correrSimulacion(payload, usuario.token)
+      if (data.xp_total != null) updateXP(data.xp_total)
       setResultado(data)
       setStep(2)
     } catch (err) {
@@ -275,6 +276,19 @@ export function ResultadosView({ resultado, onNueva, onHistorial, isDetalle = fa
           )}
         </div>
       </div>
+
+      {resultado.xp_ganado && (
+        <div style={{
+          textAlign: 'center', padding: 16, marginTop: 16,
+          background: 'rgba(251,100,0,0.1)', borderRadius: 12,
+          border: '1px solid rgba(251,100,0,0.3)'
+        }}>
+          <span style={{ fontSize: 24 }}>⚡</span>
+          <span style={{ fontWeight: 700, color: 'var(--brand)', marginLeft: 8 }}>
+            +{resultado.xp_ganado} XP
+          </span>
+        </div>
+      )}
 
       {/* Breakdown cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 14 }}>

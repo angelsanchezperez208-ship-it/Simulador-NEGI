@@ -1,25 +1,12 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { BarChart3, Flame, Trophy, Award, Play, ChevronRight, Lock } from 'lucide-react'
+import { BarChart3, Award, Play, ChevronRight } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { getHistorial } from '../api/simulaciones'
 import { formatCurrency, formatDate } from '../lib/utils'
+import { getNivelFromXP, calcXpProgress } from '../lib/xpSystem'
 import { CountNum, ProgressBar, ProgressRing, Reveal, Badge } from '../components/ui'
 import Spinner from '../components/Spinner'
-
-/* Mock gamification data — swap with real API when backend is ready */
-const MOCK_USER = {
-  nivel: 7, xp: 2840, xpNext: 3200, racha: 5, rank: 'Exportador Avanzado',
-}
-
-const LOGROS = [
-  { icon: '🚀', titulo: 'Primer despegue',  desc: 'Completaste tu primera simulación', unlocked: true,  color: '#2F6BFF' },
-  { icon: '📈', titulo: 'Números verdes',   desc: 'Utilidad positiva 3 veces',         unlocked: true,  color: '#16A34A' },
-  { icon: '🔥', titulo: 'En racha',         desc: 'Simula 5 días seguidos',             unlocked: true,  color: '#F59E0B' },
-  { icon: '🛡️', titulo: 'Maestro del T-MEC', desc: 'Domina el escenario base',         unlocked: true,  color: '#8B5CF6' },
-  { icon: '🧭', titulo: 'Explorador',       desc: 'Prueba los 4 escenarios',            unlocked: false, color: '#14B8A6' },
-  { icon: '⭐', titulo: 'Utilidad récord',  desc: 'Supera $300,000 de utilidad',        unlocked: false, color: '#F43F6B' },
-]
 
 export default function Dashboard() {
   const { usuario } = useAuth()
@@ -29,7 +16,7 @@ export default function Dashboard() {
   useEffect(() => {
     getHistorial(usuario.token, 1, 5)
       .then((data) => setHistorial(data.simulaciones || []))
-      .catch(() => {})
+      .catch((err) => console.error(err))
       .finally(() => setLoading(false))
   }, [usuario.token])
 
@@ -44,8 +31,11 @@ export default function Dashboard() {
       }, {})).sort((a, b) => b[1] - a[1])[0]?.[0]
     : '—'
 
-  const xpPct = Math.round((MOCK_USER.xp / MOCK_USER.xpNext) * 100)
-  const unlockedLogros = LOGROS.filter((l) => l.unlocked).length
+  const xpActual = usuario.xp || 0
+  const nivelInfo = getNivelFromXP(xpActual)
+  const xpPct = calcXpProgress(xpActual)
+  const xpNextLabel = nivelInfo.xpNext === Infinity ? '∞' : nivelInfo.xpNext.toLocaleString('es-MX')
+  const xpRestante = nivelInfo.xpNext === Infinity ? 0 : nivelInfo.xpNext - xpActual
 
   return (
     <div style={{ maxWidth: 1040, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 22 }}>
@@ -67,24 +57,21 @@ export default function Dashboard() {
           <ProgressRing pct={xpPct} size={104} stroke={10}>
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: 11, color: 'var(--muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.05em' }}>Nivel</div>
-              <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 34, color: 'var(--brand)' }}>{MOCK_USER.nivel}</div>
+              <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 34, color: 'var(--brand)' }}>{nivelInfo.nivel}</div>
             </div>
           </ProgressRing>
 
           <div style={{ flex: 1, minWidth: 220 }}>
-            <Badge color="var(--brand)"><Award size={14} /> {MOCK_USER.rank}</Badge>
+            <Badge color="var(--brand)"><Award size={14} /> {nivelInfo.rank}</Badge>
             <div style={{ marginTop: 12, fontSize: 15, fontWeight: 600, color: 'var(--ink-2)' }}>
-              <CountNum value={MOCK_USER.xp} style={{ fontWeight: 800, color: 'var(--ink)' }} /> / {MOCK_USER.xpNext.toLocaleString('es-MX')} XP
+              <CountNum value={xpActual} style={{ fontWeight: 800, color: 'var(--ink)' }} /> / {xpNextLabel} XP
             </div>
             <div style={{ marginTop: 10 }}><ProgressBar pct={xpPct} /></div>
             <div style={{ fontSize: 13, color: 'var(--muted)', marginTop: 8 }}>
-              {(MOCK_USER.xpNext - MOCK_USER.xp).toLocaleString('es-MX')} XP para subir al nivel {MOCK_USER.nivel + 1}
+              {nivelInfo.xpNext === Infinity
+                ? '¡Nivel máximo alcanzado!'
+                : `${xpRestante.toLocaleString('es-MX')} XP para subir al nivel ${nivelInfo.nivel + 1}`}
             </div>
-          </div>
-
-          <div style={{ display: 'flex', gap: 18 }}>
-            <MiniStat Icon={Flame}  color="#F59E0B" value={MOCK_USER.racha}    label="días de racha" />
-            <MiniStat Icon={Trophy} color="#14B8A6" value={unlockedLogros}     label="logros" />
           </div>
         </div>
       </Reveal>
@@ -129,60 +116,35 @@ export default function Dashboard() {
         </Link>
       </Reveal>
 
-      {/* Two-column: recent sims + achievements */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 18 }}>
-        <Reveal delay={320}>
-          <div style={{ background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 16, padding: 22, height: '100%', boxShadow: 'var(--shadow-sm)' }}>
-            <SectionHead title="Últimas simulaciones" actionLabel="Ver todo" actionTo="/historial" />
-            {loading && <div style={{ display: 'flex', justifyContent: 'center', padding: 20 }}><Spinner /></div>}
-            {!loading && historial.length === 0 && (
-              <p style={{ color: 'var(--muted)', fontSize: 14, marginTop: 16 }}>Sin simulaciones aún.</p>
-            )}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 14 }}>
-              {historial.map((s) => {
-                const utilidad = parseFloat(s.utilidad_mxn ?? 0)
-                return (
-                  <Link key={s.id} to={`/simulacion/${s.id}`}
-                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', borderRadius: 12, background: 'var(--surface-2)', border: '1px solid var(--line)', textDecoration: 'none', transition: 'border-color .2s, transform .2s' }}
-                    onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--line-strong)'; e.currentTarget.style.transform = 'translateX(3px)' }}
-                    onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--line)'; e.currentTarget.style.transform = 'none' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <div>
-                        <div style={{ fontSize: 14.5, fontWeight: 700, color: 'var(--ink)' }}>{s.snap_nombre_escenario || 'Escenario'}</div>
-                        <div style={{ fontSize: 12.5, color: 'var(--muted)' }}>{formatDate(s.created_at)}</div>
-                      </div>
+      {/* Recent sims */}
+      <Reveal delay={320}>
+        <div style={{ background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 16, padding: 22, boxShadow: 'var(--shadow-sm)' }}>
+          <SectionHead title="Últimas simulaciones" actionLabel="Ver todo" actionTo="/historial" />
+          {loading && <div style={{ display: 'flex', justifyContent: 'center', padding: 20 }}><Spinner /></div>}
+          {!loading && historial.length === 0 && (
+            <p style={{ color: 'var(--muted)', fontSize: 14, marginTop: 16 }}>Sin simulaciones aún.</p>
+          )}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 14 }}>
+            {historial.map((s) => {
+              const utilidad = parseFloat(s.utilidad_mxn ?? 0)
+              return (
+                <Link key={s.id} to={`/simulacion/${s.id}`}
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', borderRadius: 12, background: 'var(--surface-2)', border: '1px solid var(--line)', textDecoration: 'none', transition: 'border-color .2s, transform .2s' }}
+                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--line-strong)'; e.currentTarget.style.transform = 'translateX(3px)' }}
+                  onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--line)'; e.currentTarget.style.transform = 'none' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <div>
+                      <div style={{ fontSize: 14.5, fontWeight: 700, color: 'var(--ink)' }}>{s.snap_nombre_escenario || 'Escenario'}</div>
+                      <div style={{ fontSize: 12.5, color: 'var(--muted)' }}>{formatDate(s.created_at)}</div>
                     </div>
-                    <span style={{ fontWeight: 800, fontSize: 14.5, color: utilidad >= 0 ? 'var(--pos)' : 'var(--neg)' }}>{formatCurrency(utilidad)}</span>
-                  </Link>
-                )
-              })}
-            </div>
+                  </div>
+                  <span style={{ fontWeight: 800, fontSize: 14.5, color: utilidad >= 0 ? 'var(--pos)' : 'var(--neg)' }}>{formatCurrency(utilidad)}</span>
+                </Link>
+              )
+            })}
           </div>
-        </Reveal>
-
-        <Reveal delay={360}>
-          <div style={{ background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 16, padding: 22, height: '100%', boxShadow: 'var(--shadow-sm)' }}>
-            <SectionHead title="Logros recientes" actionLabel="Ver perfil" actionTo="/perfil" />
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginTop: 14 }}>
-              {LOGROS.slice(0, 4).map((l) => (
-                <AchievementChip key={l.titulo} l={l} />
-              ))}
-            </div>
-          </div>
-        </Reveal>
-      </div>
-    </div>
-  )
-}
-
-function MiniStat({ Icon, color, value, label }) {
-  return (
-    <div style={{ textAlign: 'center', minWidth: 78 }}>
-      <div style={{ width: 46, height: 46, borderRadius: 13, margin: '0 auto', display: 'grid', placeItems: 'center', background: `color-mix(in srgb, ${color} 14%, transparent)`, color }}>
-        <Icon size={22} />
-      </div>
-      <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 22, marginTop: 8, color: 'var(--ink)' }}>{value}</div>
-      <div style={{ fontSize: 11.5, color: 'var(--muted)', fontWeight: 600 }}>{label}</div>
+        </div>
+      </Reveal>
     </div>
   )
 }
@@ -218,20 +180,6 @@ function SectionHead({ title, actionLabel, actionTo }) {
       <Link to={actionTo} style={{ fontSize: 13.5, fontWeight: 700, color: 'var(--brand)', display: 'flex', alignItems: 'center', gap: 4, textDecoration: 'none' }}>
         {actionLabel} <ChevronRight size={15} />
       </Link>
-    </div>
-  )
-}
-
-function AchievementChip({ l }) {
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: 12, borderRadius: 12, background: 'var(--surface-2)', border: '1px solid var(--line)', opacity: l.unlocked ? 1 : 0.5 }}>
-      <span style={{ width: 38, height: 38, borderRadius: 11, flexShrink: 0, display: 'grid', placeItems: 'center', background: l.unlocked ? l.color : 'var(--bg-2)', color: l.unlocked ? '#fff' : 'var(--muted)', fontSize: 18 }}>
-        {l.unlocked ? l.icon : <Lock size={16} />}
-      </span>
-      <div style={{ minWidth: 0 }}>
-        <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{l.titulo}</div>
-        <div style={{ fontSize: 11.5, color: 'var(--muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{l.desc}</div>
-      </div>
     </div>
   )
 }
