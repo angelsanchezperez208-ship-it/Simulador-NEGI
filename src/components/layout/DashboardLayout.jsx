@@ -4,7 +4,7 @@ import Sidebar from './Sidebar'
 
 export default function DashboardLayout() {
   return (
-    <div className="flex flex-col h-screen bg-slate-950">
+    <div className="flex flex-col h-screen" style={{ background: 'var(--bg)' }}>
       <Navbar />
       <div className="flex flex-1 overflow-hidden">
         <Sidebar />

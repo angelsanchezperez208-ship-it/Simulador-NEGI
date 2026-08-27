@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
-import { ThemeProvider } from './context/ThemeContext'
+import { ThemeProvider, useTheme } from './context/ThemeContext'
 import { Toaster } from 'sonner'
 
 import Landing from './pages/Landing'
@@ -23,12 +23,12 @@ import AdminReportes from './pages/admin/AdminReportes'
 import AdminEscenarios from './pages/admin/AdminEscenarios'
 import AdminConfiguracion from './pages/admin/AdminConfiguracion'
 
-export default function App() {
+function AppContent() {
+  const { theme } = useTheme()
+
   return (
-    <BrowserRouter>
-      <ThemeProvider>
       <AuthProvider>
-        <Toaster richColors position="top-right" theme="dark" />
+        <Toaster richColors position="top-right" theme={theme} />
         <Routes>
           {/* Públicas */}
           <Route path="/" element={<Landing />} />
@@ -58,6 +58,14 @@ export default function App() {
           </Route>
         </Routes>
       </AuthProvider>
+  )
+}
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <ThemeProvider>
+        <AppContent />
       </ThemeProvider>
     </BrowserRouter>
   )
