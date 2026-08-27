@@ -69,8 +69,8 @@ export default function AdminPanel() {
     } catch (err) { toast.error(err.message) }
   }
 
-  const chartData = resumen?.por_escenario
-    ? Object.entries(resumen.por_escenario).map(([nombre, count], i) => ({ nombre, count, color: CHART_COLORS[i % CHART_COLORS.length] }))
+  const chartData = Array.isArray(resumen?.por_escenario)
+    ? resumen.por_escenario.map((item, i) => ({ nombre: item.nombre, count: item.total, color: CHART_COLORS[i % CHART_COLORS.length] }))
     : []
 
   const utilidad = resumen?.utilidad_promedio
