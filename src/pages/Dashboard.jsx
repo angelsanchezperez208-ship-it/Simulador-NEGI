@@ -43,7 +43,7 @@ export default function Dashboard() {
       <Reveal>
         <div>
           <h1 style={{ fontSize: 'clamp(28px, 3.5vw, 38px)' }}>
-            Hola, {firstName} <span style={{ display: 'inline-block', animation: 'floaty 2.5s ease-in-out infinite' }}>👋</span>
+            Hola, {firstName} <span style={{ display: 'inline-block', animation: 'floaty 2.5s ease-in-out infinite' }}></span>
           </h1>
           <p style={{ color: 'var(--muted)', fontSize: 16, marginTop: 8 }}>
             Bienvenido de vuelta al Simulador de Negocios Internacionales
